@@ -1,4 +1,3 @@
-RejectStats File,Description
 Amount Requested,The total amount requested by the borrower
 Application Date,The date which the borrower applied 
 Loan Title,The loan title provided by the borrower
@@ -9,5 +8,3 @@ State,The state provided by the borrower in the loan application
 Employment Length,Employment length in years. Possible values are between 0 and 10 where 0 means less than one year and 10 means ten or more years.
 Policy Code,"publicly available policy_code=1
 new products not publicly available policy_code=2"
-,
-,
