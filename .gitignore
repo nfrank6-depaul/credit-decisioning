@@ -4,3 +4,6 @@ data/accepted_2017.csv
 data/accepted_2017_clean.csv
 data/accepted_2017_reduced.csv
 data/accepted_2017_valid_targets.csv
+data_dictionary_approved.csv
+data_dictionary_notes.csv
+data_dictionary_reject.csv
