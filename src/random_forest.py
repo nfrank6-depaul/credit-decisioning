@@ -12,7 +12,7 @@ import warnings, sklearn.exceptions
 warnings.filterwarnings("ignore", category=sklearn.exceptions.ConvergenceWarning)
 
 # Parameters
-features_selection = 1 # Set to 0 or 1 to turn on or off feature selection
+features_selection = 0 # Set to 0 or 1 to turn on or off feature selection
 cross_val =1 # Set to 0 or 1 to turn on or off cross-validation
 # Set random seed for reproducibility
 rand_st=7
@@ -62,7 +62,7 @@ if cross_val==0:
 if cross_val==1:
     scorers = {'Accuracy': 'accuracy', 'roc_auc': 'roc_auc'} 
     start_time = time.time()
-    clf = RandomForestClassifier(n_estimators=100, criterion='entropy', max_depth=None, min_samples_split=3, class_weight='balanced', random_state=rand_st)
+    clf = RandomForestClassifier(n_estimators=100, criterion='entropy', max_depth=None, min_samples_split=3, class_weight=None, random_state=rand_st)
     scores = cross_validate(clf, data, target, scoring=scorers, cv=5)
     end_time = time.time()
     scores_Acc = scores['test_Accuracy']                                                                                                                                    

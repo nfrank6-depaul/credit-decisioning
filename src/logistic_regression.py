@@ -12,8 +12,8 @@ import warnings, sklearn.exceptions
 warnings.filterwarnings("ignore", category=sklearn.exceptions.ConvergenceWarning)
 
 # Parameters
-features_selection = 0 # Set to 0 or 1 to turn on or off feature selection
-cross_val =0 # Set to 0 or 1 to turn on or off cross-validation
+features_selection = 1 # Set to 0 or 1 to turn on or off feature selection
+cross_val =1 # Set to 0 or 1 to turn on or off cross-validation
 # Set random seed for reproducibility
 rand_st=7
 
@@ -27,8 +27,8 @@ target = df["loan_status_binary"]
 if features_selection == 1:
     print('--FEATURE SELECTION ON--', '\n')
 
-    ## Wrapper Selection via RandomForestClassifier
-    clf = LogisticRegression(penalty='l2',class_weight='balanced',solver='liblinear',max_iter=500,random_state=rand_st)            
+    ## Wrapper Selection via Logisitc Regression Classifier
+    clf = LogisticRegression(penalty='l1',class_weight=None,solver='liblinear',max_iter=1000,random_state=rand_st)           
     sel = SelectFromModel(clf, prefit=False, threshold='mean', max_features=None)                   
     print ('Wrapper Select: ')
     fit_mod=sel.fit(data, target)    
@@ -62,7 +62,7 @@ if cross_val==0:
 if cross_val==1:
     scorers = {'Accuracy': 'accuracy', 'roc_auc': 'roc_auc'} 
     start_time = time.time()
-    clf = LogisticRegression(penalty='l2',class_weight='balanced',solver='liblinear',max_iter=500,random_state=rand_st)    
+    clf = LogisticRegression(penalty='l1',class_weight=None,solver='liblinear',max_iter=1000,random_state=rand_st)    
     scores = cross_validate(clf, data, target, scoring=scorers, cv=5)
     end_time = time.time()
     scores_Acc = scores['test_Accuracy']                                                                                                                                    
