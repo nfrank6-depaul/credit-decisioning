@@ -1,8 +1,16 @@
 # Import libraries
 # Code influenced by Dr. Casey Bennett's assignment code for Random Forests for DSC445 at DePaul University Autumn Quarter 2025
+import os
+import sys
 import time
 import pandas as pd
-from sklearn.ensemble import GradientBoostingClassifier
+
+# Avoid shadowing the external xgboost package since this file is also named xgboost.py
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+if _THIS_DIR in sys.path:
+    sys.path.remove(_THIS_DIR)
+from xgboost import XGBClassifier
+sys.path.insert(0, _THIS_DIR)
 from sklearn.feature_selection import SelectFromModel, VarianceThreshold
 from sklearn import metrics
 from sklearn.model_selection import cross_validate, train_test_split
@@ -12,10 +20,18 @@ import warnings, sklearn.exceptions
 warnings.filterwarnings("ignore", category=sklearn.exceptions.ConvergenceWarning)
 
 # Parameters
-features_selection = 0 # Set to 0 or 1 to turn on or off feature selection
+features_selection = 1# Set to 0 or 1 to turn on or off feature selection
 cross_val =1 # Set to 0 or 1 to turn on or off cross-validation
 # Set random seed for reproducibility
 rand_st=7
+xgb_params = {
+    "n_estimators": 300,
+    "learning_rate": 0.05,
+    "max_depth": 5,
+    "subsample": 0.9,
+    "colsample_bytree": 0.9,
+    "random_state": rand_st,
+}
 
 # Load data
 df = pd.read_csv("data/dataset.csv")
@@ -27,9 +43,9 @@ target = df["loan_status_binary"]
 if features_selection == 1:
     print('--FEATURE SELECTION ON--', '\n')
 
-    ## Wrapper Selection via RandomForestClassifier
-    # clf = GradientBoostingClassifier(n_estimators=100, criterion='entropy', max_depth=None, min_samples_split=3, random_state=rand_st)             
-    sel = SelectFromModel(clf, prefit=False, threshold='mean', max_features=None)                   
+    ## Wrapper Selection via XGBoost feature importances
+    feat_clf = XGBClassifier(**xgb_params)
+    sel = SelectFromModel(feat_clf, prefit=False, threshold='median', max_features=None)                   
     print ('Wrapper Select: ')
     fit_mod=sel.fit(data, target)    
     sel_idx=fit_mod.get_support()
@@ -48,27 +64,27 @@ data_train, data_test, target_train, target_test = train_test_split(data, target
 
 # Classifiers with or without cross-validation
 if cross_val==0:
-    clf = GradientBoostingClassifier(n_estimators=100, criterion='gini', max_depth=None, min_samples_split=3, class_weight=None, random_state=rand_st)             
+    clf = XGBClassifier(**xgb_params)             
     start_time = time.time()
     clf.fit(data_train, target_train)
     end_time = time.time()
 
     scores_ACC = clf.score(data_test, target_test)                                                                                                                          
-    print('Random Forest Acc:', scores_ACC)
+    print('XGBoost Acc:', scores_ACC)
     scores_AUC = metrics.roc_auc_score(target_test, clf.predict_proba(data_test)[:,1])                                                                                      
-    print('Random Forest AUC:', scores_AUC)   
+    print('XGBoost AUC:', scores_AUC)   
     print('Training time (seconds): ', round(end_time - start_time, 2))
 
 if cross_val==1:
     scorers = {'Accuracy': 'accuracy', 'roc_auc': 'roc_auc'} 
     start_time = time.time()
-    clf = GradientBoostingClassifier(n_estimators=100, criterion='entropy', max_depth=None, min_samples_split=5, class_weight=None, random_state=rand_st)
+    clf = XGBClassifier(**xgb_params)
     scores = cross_validate(clf, data, target, scoring=scorers, cv=5)
     end_time = time.time()
     scores_Acc = scores['test_Accuracy']                                                                                                                                    
-    print("Random Forest Acc: %0.2f (+/- %0.2f)" % (scores_Acc.mean(), scores_Acc.std() * 2))                                                                                                    
+    print("XGBoost Acc: %0.2f (+/- %0.2f)" % (scores_Acc.mean(), scores_Acc.std() * 2))                                                                                                    
     scores_AUC= scores['test_roc_auc']                                                                     #Only works with binary classes, not multiclass                  
-    print("Random Forest AUC: %0.2f (+/- %0.2f)" % (scores_AUC.mean(), scores_AUC.std() * 2))                           
+    print("XGBoost AUC: %0.2f (+/- %0.2f)" % (scores_AUC.mean(), scores_AUC.std() * 2))                           
     print('Cross Validaton time (seconds): ', round(end_time - start_time, 2))
 
 
@@ -79,5 +95,4 @@ if cross_val==1:
 
 
 # run successfully flag
-print("\n!!!!!!Random Forest script ran successfully.!!!!!\n")
-
+print("\n!!!!!!XGBoost script ran successfully.!!!!!\n")
